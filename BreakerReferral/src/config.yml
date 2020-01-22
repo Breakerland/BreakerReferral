@@ -1,0 +1,10 @@
+db:
+  host: localhost
+  port: 3306
+  database: sponso
+  username: root
+  password: ""
+ 
+advancement:
+  - minecraft:adventure/adventuring_time
+  - minecraft:adventure/arbalistic
