@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
@@ -21,7 +22,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 
 public class OnJoin implements Listener {
 	main plugin = main.getPlugin(main.class);
-	@EventHandler
+	
+	@EventHandler (priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		if(!haveDemande(e.getPlayer().getUniqueId().toString())) {
 			return;
@@ -54,18 +56,18 @@ public class OnJoin implements Listener {
 			while(results.next()) {
 				TextComponent acceptText = new TextComponent();
 				acceptText.setText("§4[REFUSER]");
-				acceptText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/parrain decline " + plugin.getUnique(results.getInt("id"))));
+				acceptText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/parrain decline " + plugin.getUnique(results.getInt("referred"))));
 				acceptText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.RED + "Refuser la demander").create()));
 				
 				///creation du bouton accepté
 				TextComponent declineText = new TextComponent();
 				declineText.setText("§a [ACCEPTER] ");
-				declineText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/parrain accept " + plugin.getUnique(results.getInt("id"))));
+				declineText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/parrain accept " + plugin.getUnique(results.getInt("referred"))));
 				declineText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GREEN + "Accepter la demande").create()));
 				
 				///creation text quand demande
 				TextComponent broadText = new TextComponent();
-				broadText.setText(ChatColor.GOLD + Bukkit.getPlayer(UUID.fromString(plugin.getUnique(results.getInt("id")))).getName() + " souhaite devenir votre filleul(e)");
+				broadText.setText(ChatColor.GOLD + Bukkit.getPlayer(UUID.fromString(plugin.getUnique(results.getInt("referred")))).getName() + " souhaite devenir votre filleul(e)");
 				///ajout du choice text au broad
 				broadText.addExtra(declineText);
 				broadText.addExtra(acceptText);

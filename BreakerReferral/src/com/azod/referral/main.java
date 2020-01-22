@@ -79,7 +79,7 @@ public class main extends JavaPlugin {
 		try (Statement statement = getConnection().createStatement()){
 			statement.executeUpdate("CREATE TABLE IF NOT EXISTS `playerdata` ( `id` INT(11) NOT NULL AUTO_INCREMENT, `username` VARCHAR(16) NOT NULL, `uuid` VARCHAR(36) NOT NULL, PRIMARY KEY (`id`))");
 			statement.executeUpdate("CREATE TABLE IF NOT EXISTS `referral` ( `referral` int(11) NOT NULL, `referred` int(11) NOT NULL,`accepted` BOOLEAN NOT NULL DEFAULT FALSE,`date` timestamp NOT NULL DEFAULT current_timestamp())");
-			statement.executeUpdate("CREATE TABLE IF NOT EXISTS `rewards` ( `id` int(11) NOT NULL)");
+			statement.executeUpdate("CREATE TABLE IF NOT EXISTS `rewards` ( `referral` int(11) NOT NULL, `referred` int(11) NOT NULL)");
 			statement.executeUpdate("CREATE TABLE IF NOT EXISTS `achievements` ( `id` int(11) NOT NULL)");
 		}catch (SQLException e) {
 			e.printStackTrace();
@@ -155,8 +155,11 @@ public class main extends JavaPlugin {
 	}
     public String getUnique(Integer i) {
     	try(Statement statement = getConnection().createStatement()){
-    		String uuid = statement.executeQuery("SELECT * FROM `playerdata` WHERE id='"+i+"`").getString("uuid");
-    		return uuid;
+    		ResultSet rs = statement.executeQuery("SELECT * FROM `playerdata` WHERE id='"+i+"'");
+    		if(rs.next()) {
+    			String uuid = rs.getString("uuid");
+    			return uuid;
+    		}
     	}catch (SQLException e) {
     		e.printStackTrace();
     	}
@@ -164,8 +167,12 @@ public class main extends JavaPlugin {
     }
     public Integer getId(String s) {
     	try(Statement statement = getConnection().createStatement()){
-    		Integer uuid = statement.executeQuery("SELECT * FROM `playerdata` WHERE uuid='"+s+"`").getInt("id");
-    		return uuid;
+    		ResultSet rs = statement.executeQuery("SELECT * FROM `playerdata` WHERE uuid='"+s+"'");
+    		if(rs.next()) {
+    			Integer uuid = rs.getInt("id");
+    			return uuid;
+    		}
+    		
     	}catch (SQLException e) {
     		e.printStackTrace();
     	}

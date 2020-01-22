@@ -1,5 +1,14 @@
 data:
   maxref: 9
+  msgmax: ne peux pas avoir de filleuls supplementaires !
+  isref: Vous avez atteint le nombre maximal de parrains !
+  hasask: a deja recu votre demande !
+  fhasp: a deja un parrain !
+  noask: ne vous a pas envoyer de demande !
+  accp: est devenu votre parrain !
+  accf: est devenu votre filleul !
+  refp: a refuse de devenir votre parrain !
+  reff: Vous avez refuse la demande de
 db:
   host: localhost
   port: 3306
