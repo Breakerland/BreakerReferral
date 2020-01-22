@@ -21,8 +21,13 @@ import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.azod.referral.cmd.CommandParrain;
+import com.azod.referral.listener.OnAdv;
+import com.azod.referral.listener.OnJoin;
+
+
 public class main extends JavaPlugin {
-	public String host, database, username, password, playerdata, referrals, achievements, recompenses;
+	public String host, database, username, password, playerdata, referrals, achievements, rewards;
 	public int port;
     private Connection connection;
     public List<String> advlist = new ArrayList<String>();
@@ -32,6 +37,11 @@ public class main extends JavaPlugin {
 		mysqlSetup();
 		initTable();
 		initAdv();
+		CommandParrain instance = new CommandParrain(this);
+		getServer().getPluginManager().registerEvents(instance, this);
+		this.getCommand("parrain").setExecutor(instance);	
+		getServer().getPluginManager().registerEvents(new OnJoin(), this);
+	    getServer().getPluginManager().registerEvents(new OnAdv(this), this);
 	}
 	
 	public void mysqlSetup() {
@@ -43,7 +53,7 @@ public class main extends JavaPlugin {
 		playerdata = "playerdata";
 		referrals = "referral";
 		achievements = "achievements";
-		recompenses = "recompenses";
+		rewards = "rewards";
 		 try {    
 			 synchronized(this) {
 				 if(getConnection() != null && !getConnection().isClosed()) {
@@ -68,8 +78,8 @@ public class main extends JavaPlugin {
 	public void initTable() {
 		try (Statement statement = getConnection().createStatement()){
 			statement.executeUpdate("CREATE TABLE IF NOT EXISTS `playerdata` ( `id` INT(11) NOT NULL AUTO_INCREMENT, `username` VARCHAR(16) NOT NULL, `uuid` VARCHAR(36) NOT NULL, PRIMARY KEY (`id`))");
-			statement.executeUpdate("CREATE TABLE IF NOT EXISTS `referral` ( `referral` int(11) NOT NULL, `referred` int(11) NOT NULL, `date` timestamp NOT NULL DEFAULT current_timestamp())");
-			statement.executeUpdate("CREATE TABLE IF NOT EXISTS `recompenses` ( `id` int(11) NOT NULL)");
+			statement.executeUpdate("CREATE TABLE IF NOT EXISTS `referral` ( `referral` int(11) NOT NULL, `referred` int(11) NOT NULL,`accepted` BOOLEAN NOT NULL DEFAULT FALSE,`date` timestamp NOT NULL DEFAULT current_timestamp())");
+			statement.executeUpdate("CREATE TABLE IF NOT EXISTS `rewards` ( `id` int(11) NOT NULL)");
 			statement.executeUpdate("CREATE TABLE IF NOT EXISTS `achievements` ( `id` int(11) NOT NULL)");
 		}catch (SQLException e) {
 			e.printStackTrace();
@@ -84,9 +94,9 @@ public class main extends JavaPlugin {
 				createCol(achievements, s);
 				Bukkit.getConsoleSender().sendMessage(ChatColor.GOLD+s+" has been added to achievements");
 			}
-			if(!colExist(recompenses, s)) {
-				createCol(recompenses, s);
-				Bukkit.getConsoleSender().sendMessage(ChatColor.GOLD+s+" has been added to recompenses");
+			if(!colExist(rewards, s)) {
+				createCol(rewards, s);
+				Bukkit.getConsoleSender().sendMessage(ChatColor.GOLD+s+" has been added to rewards");
 			}
 		}
 		Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN+"Colums updated");
