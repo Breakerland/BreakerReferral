@@ -3,19 +3,23 @@ package com.azod.referral.cmd;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import com.azod.referral.main;
 
@@ -30,8 +34,8 @@ public class CommandParrain implements CommandExecutor, Listener {
 		this.plugin = main;
 	}
 	
-
-
+	private List<UUID> child = new ArrayList<UUID>();
+	
 	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -47,7 +51,37 @@ public class CommandParrain implements CommandExecutor, Listener {
 			return false;
 		}
 		else if(args[0].equalsIgnoreCase("advancement") || cmd.getName().equalsIgnoreCase("padv")) {
+			Player p = (Player) sender;
+			if(!plugin.haveChild(p.getUniqueId().toString())) {
+				p.sendMessage(ChatColor.RED+plugin.getConfig().getString("data.nof"));
+				return false;
+			}
+			child.clear();
+			getChild(p.getUniqueId().toString());
+			Inventory inventory = Bukkit.createInventory(p, Math.min(6, (int) Math.ceil(child.size() / 9D)) * 9, "Vos filleuls");
+			for(UUID owner : child) {
+				ItemStack skull = new ItemStack(Material.PLAYER_HEAD,1);
+				SkullMeta meta = (SkullMeta) skull.getItemMeta();
+				meta.setOwningPlayer(Bukkit.getOfflinePlayer(owner));
+				String name = Bukkit.getOfflinePlayer(owner).getName();
+				meta.setDisplayName(name);
+				skull.setItemMeta(meta);
+				inventory.addItem(skull);
+			}
+			Integer i = child.size();
+			ItemStack glass = new ItemStack(Material.RED_STAINED_GLASS_PANE,1);
+			ItemMeta gmeta = glass.getItemMeta();
+			gmeta.setDisplayName(ChatColor.RED+"Rien à voir ici !");
+			glass.setItemMeta(gmeta);
+			while(i < inventory.getSize()) {
+				inventory.setItem(i, glass);
+				i++;
+			}
+			child.clear();
+			plugin.players.add(p.getUniqueId());
 			
+			p.openInventory(inventory);
+			return false;
 		}
 		else if(args[0].equalsIgnoreCase("accept")) {
 			if(args.length < 2) {
@@ -57,25 +91,27 @@ public class CommandParrain implements CommandExecutor, Listener {
 			
 			if(args[1].length()<=16) {	
 				OfflinePlayer f = Bukkit.getOfflinePlayer(args[1]);
-				if(!hasAsk(f.getUniqueId().toString(), p.getUniqueId().toString())) {
+				if(!plugin.hasAsk(f.getUniqueId().toString(), p.getUniqueId().toString())) {
 					p.sendMessage(ChatColor.GOLD+args[1]+" "+ChatColor.RED+plugin.getConfig().getString("data.noask"));
 					return false;
 				}
-				else if(isRef(f.getUniqueId().toString())) {
+				else if(plugin.isRef(f.getUniqueId().toString())) {
 					p.sendMessage(ChatColor.GOLD+args[1]+" "+ChatColor.RED+plugin.getConfig().getString("data.fhasp"));
-					delRef(f.getUniqueId().toString(),p.getUniqueId().toString());
+					plugin.delRef(f.getUniqueId().toString(),p.getUniqueId().toString());
 					return false;
 				}
-				else if(haveMax(p.getUniqueId().toString())) {
+				else if(plugin.haveMax(p.getUniqueId().toString())) {
 					p.sendMessage(ChatColor.GOLD+args[1]+" "+ChatColor.RED+plugin.getConfig().getString("data.msgmax"));
-					delRef(f.getUniqueId().toString(),p.getUniqueId().toString());
+					plugin.delRef(f.getUniqueId().toString(),p.getUniqueId().toString());
 					return false;
 				}
 				else {
-					accRef(f.getUniqueId().toString(), p.getUniqueId().toString());
+					plugin.accRef(f.getUniqueId().toString(), p.getUniqueId().toString());
+					
 					p.sendMessage(ChatColor.GOLD+args[1]+" "+ChatColor.GREEN+plugin.getConfig().getString("data.accf"));
 					if(Bukkit.getOnlinePlayers().contains(f)) {
 						Bukkit.getPlayer(f.getUniqueId()).sendMessage(ChatColor.GOLD+p.getName()+" "+ChatColor.GREEN+plugin.getConfig().getString("data.accp"));
+						
 					}
 					return false;
 				}
@@ -83,25 +119,27 @@ public class CommandParrain implements CommandExecutor, Listener {
 			}
 			else {
 				OfflinePlayer f = Bukkit.getOfflinePlayer(UUID.fromString(args[1]));
-				if(!hasAsk(f.getUniqueId().toString(), p.getUniqueId().toString())) {
+				if(!plugin.hasAsk(f.getUniqueId().toString(), p.getUniqueId().toString())) {
 					p.sendMessage(ChatColor.GOLD+ f.getName()+" "+ChatColor.RED+plugin.getConfig().getString("data.noask"));
 					return false;
 				}
-				else if(isRef(f.getUniqueId().toString())) {
+				else if(plugin.isRef(f.getUniqueId().toString())) {
 					p.sendMessage(ChatColor.GOLD+f.getName()+" "+ChatColor.RED+plugin.getConfig().getString("data.fhasp"));
-					delRef(f.getUniqueId().toString(),p.getUniqueId().toString());
+					plugin.delRef(f.getUniqueId().toString(),p.getUniqueId().toString());
 					return false;
 				}
-				else if(haveMax(p.getUniqueId().toString())) {
+				else if(plugin.haveMax(p.getUniqueId().toString())) {
 					p.sendMessage(ChatColor.GOLD+f.getName()+" "+ChatColor.RED+plugin.getConfig().getString("data.msgmax"));
-					delRef(f.getUniqueId().toString(),p.getUniqueId().toString());
+					plugin.delRef(f.getUniqueId().toString(),p.getUniqueId().toString());
 					return false;
 				}
 				else {
-					accRef(f.getUniqueId().toString(), p.getUniqueId().toString());
+					plugin.accRef(f.getUniqueId().toString(), p.getUniqueId().toString());
+					
 					p.sendMessage(ChatColor.GOLD+f.getName()+" "+ChatColor.GREEN+plugin.getConfig().getString("data.accf"));
 					if(Bukkit.getOnlinePlayers().contains(f)) {
 						Bukkit.getPlayer(f.getUniqueId()).sendMessage(ChatColor.GOLD+p.getName()+" "+ChatColor.GREEN+plugin.getConfig().getString("data.accp"));
+						
 					}
 					return false;
 				}
@@ -114,12 +152,12 @@ public class CommandParrain implements CommandExecutor, Listener {
 			Player p = (Player) sender;
 			if(args[1].length() <=16) {
 				OfflinePlayer f = Bukkit.getOfflinePlayer(args[1]);
-				if(!hasAsk(f.getUniqueId().toString(), p.getUniqueId().toString())) {
+				if(!plugin.hasAsk(f.getUniqueId().toString(), p.getUniqueId().toString())) {
 					p.sendMessage(ChatColor.GOLD+args[1]+" "+ChatColor.RED+plugin.getConfig().getString("data.noask"));
 					return false;
 				}
 				else {
-					delRef(f.getUniqueId().toString(),p.getUniqueId().toString());
+					plugin.delRef(f.getUniqueId().toString(),p.getUniqueId().toString());
 					p.sendMessage(ChatColor.RED+plugin.getConfig().getString("data.reff")+" "+ChatColor.GOLD+f.getName());
 					if(Bukkit.getOnlinePlayers().contains(f)) {
 						Bukkit.getPlayer(f.getUniqueId()).sendMessage(ChatColor.GOLD+p.getName()+" "+ChatColor.RED+plugin.getConfig().getString("data.refp"));
@@ -129,12 +167,12 @@ public class CommandParrain implements CommandExecutor, Listener {
 			}
 			else {
 				OfflinePlayer f = Bukkit.getOfflinePlayer(UUID.fromString(args[1]));
-				if(!hasAsk(f.getUniqueId().toString(), p.getUniqueId().toString())) {
+				if(!plugin.hasAsk(f.getUniqueId().toString(), p.getUniqueId().toString())) {
 					p.sendMessage(ChatColor.GOLD+f.getName()+" "+ChatColor.RED+plugin.getConfig().getString("data.noask"));
 					return false;
 				}
 				else {
-					delRef(f.getUniqueId().toString(),p.getUniqueId().toString());
+					plugin.delRef(f.getUniqueId().toString(),p.getUniqueId().toString());
 					p.sendMessage(ChatColor.RED+plugin.getConfig().getString("data.reff")+" "+ChatColor.GOLD+f.getName());
 					if(Bukkit.getOnlinePlayers().contains(f)) {
 						Bukkit.getPlayer(f.getUniqueId()).sendMessage(ChatColor.GOLD+p.getName()+" "+ChatColor.RED+plugin.getConfig().getString("data.refp"));
@@ -150,21 +188,21 @@ public class CommandParrain implements CommandExecutor, Listener {
 				player.sendMessage("§cLe joueur §6"+ args[0] + "§c n'existe pas !");
 			}
 			else {
-				if(!DataExist(player.getUniqueId().toString())) {
-					addData(Bukkit.getOfflinePlayer(player.getUniqueId()));
+				if(!plugin.DataExist(player.getUniqueId().toString())) {
+					plugin.addData(Bukkit.getOfflinePlayer(player.getUniqueId()));
 				}
-				if(!DataExist(receiver.getUniqueId().toString())) {
-					addData(receiver);
+				if(!plugin.DataExist(receiver.getUniqueId().toString())) {
+					plugin.addData(receiver);
 				}
-				if(isRef(player.getUniqueId().toString())) {
+				if(plugin.isRef(player.getUniqueId().toString())) {
 					player.sendMessage(ChatColor.RED + plugin.getConfig().getString("data.isref"));
 					return false;
 				}
-				else if(haveMax(receiver.getUniqueId().toString())) {
+				else if(plugin.haveMax(receiver.getUniqueId().toString())) {
 					player.sendMessage(ChatColor.GOLD+ receiver.getName()+" " +ChatColor.RED +plugin.getConfig().getString("data.msgmax"));
 					return false;
 				}
-				else if(hasAsk(player.getUniqueId().toString(), receiver.getUniqueId().toString())) {
+				else if(plugin.hasAsk(player.getUniqueId().toString(), receiver.getUniqueId().toString())) {
 					player.sendMessage(ChatColor.GOLD+ receiver.getName()+" "+ChatColor.RED+plugin.getConfig().getString("data.hasask"));
 					return false;
 				}
@@ -191,102 +229,34 @@ public class CommandParrain implements CommandExecutor, Listener {
 					
 					p.spigot().sendMessage(broadText);
 				}
-				addRef(player.getUniqueId().toString(),receiver.getUniqueId().toString());
+				Bukkit.getScheduler ().runTaskLater(plugin, () -> plugin.addRef(player.getUniqueId().toString(),receiver.getUniqueId().toString()), 20);
+				
 			}
 		
 		return false;
 	}
 	
-	public boolean hasAsk(String d, String r) {
-		try {
+	public void getChild(String r) {
+	try {
 			PreparedStatement statement = plugin.getConnection()
-					.prepareStatement("SELECT * FROM `referral` WHERE `referral`='"+plugin.getId(r)+"' AND `referred`='"+plugin.getId(d)+"' AND `accepted`=FALSE");
-			ResultSet rs = statement.executeQuery();
-			if(rs.next()) {
-				return true;
+					.prepareStatement("SELECT * FROM `referral` WHERE `referral`='"+plugin.getId(r)+"' AND `accepted`='1'");
+			
+			
+			ResultSet results = statement.executeQuery();
+			while(results.next()) {
+				UUID player = UUID.fromString(plugin.getUnique(results.getInt("referred")));
+				child.add(player);
+				return;
 			}
+			plugin.getServer().getConsoleSender().sendMessage(ChatColor.GREEN +"Player don't have child");
 		}catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return false;
+		
+		return;
+	
 	}
-	public boolean haveMax(String s) {
-		try {
-			PreparedStatement statement = plugin.getConnection()
-					.prepareStatement("SELECT COUNT(*) as rowcount FROM `referral` WHERE `referral`='"+plugin.getId(s)+"' AND `accepted`=TRUE");
-			ResultSet rs = statement.executeQuery();
-			if(rs.next()) {
-				if(rs.getInt("rowcount") == plugin.getConfig().getInt("data.maxref")) {
-					return true;
-				}				
-			}
-		}catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-	public boolean isRef(String s) {
-		try {
-			PreparedStatement statement = plugin.getConnection()
-					.prepareStatement("SELECT * FROM `referral` WHERE `referred`='"+plugin.getId(s)+"' AND `accepted`=TRUE");
-			ResultSet rs = statement.executeQuery();
-			if(rs.next()) {
-				return true;
-			}
-		}catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-	public boolean DataExist(String s) {
-		try {
-			PreparedStatement statement = plugin.getConnection()
-					.prepareStatement("SELECT * FROM `playerdata` WHERE `uuid`='"+s+"'");
-			ResultSet rs = statement.executeQuery();
-			if(rs.next()) {
-				return true;
-			}
-		}catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-	public void addData(OfflinePlayer p) {
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-			try(Statement statement = plugin.getConnection().createStatement()){
-				statement.executeUpdate("INSERT INTO `playerdata` (uuid, username) VALUES ('"+p.getUniqueId().toString()+"', '"+p.getName()+"')");
-			}catch (SQLException e) {
-				e.printStackTrace();
-			}
-		});
-	}
-	public void addRef(String d, String r) {
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-			try(Statement statement = plugin.getConnection().createStatement()){
-				statement.executeUpdate("INSERT INTO `referral` (referral,referred,accepted) VALUES ('"+plugin.getId(r)+"','"+plugin.getId(d)+"', '0')");
-			}catch (SQLException e) {
-				e.printStackTrace();
-			}
-		});
-	}
-	public void delRef(String d, String r) {
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-			try(Statement statement = plugin.getConnection().createStatement()){
-				statement.executeUpdate("DELETE FROM `referral` WHERE `referral`='"+plugin.getId(r)+"' AND `referred`='"+plugin.getId(d)+"' AND `accepted`=FALSE");
-			}catch (SQLException e) {
-				e.printStackTrace();
-			}
-		});
-	}
-	public void accRef(String d, String r) {
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-			try(Statement statement = plugin.getConnection().createStatement()){
-				statement.executeUpdate("UPDATE `referral` SET `accepted`=TRUE WHERE `referral`='"+plugin.getId(r)+"' AND `referred`='"+plugin.getId(d)+"' AND `accepted`=FALSE");
-			}catch (SQLException e) {
-				e.printStackTrace();
-			}
-		});
-	}
+
 	
 	
 }

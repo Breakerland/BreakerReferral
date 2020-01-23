@@ -9,8 +9,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -23,6 +26,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.azod.referral.cmd.CommandParrain;
 import com.azod.referral.listener.OnAdv;
+import com.azod.referral.listener.OnInte;
 import com.azod.referral.listener.OnJoin;
 
 
@@ -32,16 +36,20 @@ public class main extends JavaPlugin {
     private Connection connection;
     public List<String> advlist = new ArrayList<String>();
     public List<String> uuidlist = new ArrayList<String>();
+    public HashMap<String, Integer> listrew = new HashMap<>();
+    public final Set<UUID> players = new HashSet<>();
 	public void onEnable() {
 		saveDefaultConfig();
 		mysqlSetup();
 		initTable();
+		adduuid();
 		initAdv();
 		CommandParrain instance = new CommandParrain(this);
 		getServer().getPluginManager().registerEvents(instance, this);
 		this.getCommand("parrain").setExecutor(instance);	
 		getServer().getPluginManager().registerEvents(new OnJoin(), this);
 	    getServer().getPluginManager().registerEvents(new OnAdv(this), this);
+	    getServer().getPluginManager().registerEvents(new OnInte(this), this);
 	}
 	
 	public void mysqlSetup() {
@@ -100,30 +108,29 @@ public class main extends JavaPlugin {
 			}
 		}
 		Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN+"Colums updated");
-		for(String u : uuidlist) {
-			updateCol(u);
-		}
-		Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN+"Players advancements updated");
 	}
 	public void updateCol(String s) {
 		for(String st : advlist) {
 			OfflinePlayer p = Bukkit.getOfflinePlayer(UUID.fromString(s));
+			String stt =st;
+			
 			 st = st.replace("minecraft:", "");
 			try {
 				PreparedStatement statement = getConnection()
-						.prepareStatement("SELECT * FROM `achievements` WHERE `id`='"+getId(s)+"' AND `"+st+"`=FALSE");
+						.prepareStatement("SELECT * FROM `achievements` WHERE `id`='"+getId(s)+"' AND `"+st+"`='0'");
 				ResultSet rs = statement.executeQuery();
 				if(rs.next()) {
-					if(hasAdvancement(p, st)) {
+					if(hasAdvancement(p, stt)) {
 						try {
 							PreparedStatement statementt = getConnection()
-									.prepareStatement("UPDATE `achievements` SET `"+st+"`=TRUE WHERE `id`='"+getId(s)+"'");
+									.prepareStatement("UPDATE `achievements` SET `"+st+"`='1' WHERE `id`='"+getId(s)+"'");
 							statementt.executeUpdate();
 						}catch (SQLException e) {
 							e.printStackTrace();
 						}
 					}
 				}
+				
 			}catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -207,6 +214,9 @@ public class main extends JavaPlugin {
 	@SuppressWarnings("unchecked")
 	public void addadv() {
 		advlist.addAll((Collection<? extends String>) getConfig().getList("advancement"));
+		for(String s : advlist) {
+			listrew.put(s, getConfig().getInt("rewards."+s));
+		}
 	}
 	public void adduuid() {
 	try {
@@ -222,4 +232,119 @@ public class main extends JavaPlugin {
 		e.printStackTrace();
 	}
 	}
+	public boolean hasAsk(String d, String r) {
+		try {
+			PreparedStatement statement = getConnection()
+					.prepareStatement("SELECT * FROM `referral` WHERE `referral`='"+getId(r)+"' AND `referred`='"+getId(d)+"' AND `accepted`=FALSE");
+			ResultSet rs = statement.executeQuery();
+			if(rs.next()) {
+				return true;
+			}
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	public boolean haveMax(String s) {
+		try {
+			PreparedStatement statement = getConnection()
+					.prepareStatement("SELECT COUNT(*) as rowcount FROM `referral` WHERE `referral`='"+getId(s)+"' AND `accepted`=TRUE");
+			ResultSet rs = statement.executeQuery();
+			if(rs.next()) {
+				if(rs.getInt("rowcount") == getConfig().getInt("data.maxref")) {
+					return true;
+				}				
+			}
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	public boolean isRef(String s) {
+		try {
+			PreparedStatement statement = getConnection()
+					.prepareStatement("SELECT * FROM `referral` WHERE `referred`='"+getId(s)+"' AND `accepted`=TRUE");
+			ResultSet rs = statement.executeQuery();
+			if(rs.next()) {
+				return true;
+			}
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	public boolean DataExist(String s) {
+		try {
+			PreparedStatement statement = getConnection()
+					.prepareStatement("SELECT * FROM `playerdata` WHERE `uuid`='"+s+"'");
+			ResultSet rs = statement.executeQuery();
+			if(rs.next()) {
+				return true;
+			}
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	public void addData(OfflinePlayer p) {
+		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+			try(Statement statement = getConnection().createStatement()){
+				statement.executeUpdate("INSERT INTO `playerdata` (uuid, username) VALUES ('"+p.getUniqueId().toString()+"', '"+p.getName()+"')");
+			}catch (SQLException e) {
+				e.printStackTrace();
+			}
+		});
+	}
+	public void addRef(String d, String r) {
+		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+			try(Statement statement = getConnection().createStatement()){
+				statement.executeUpdate("INSERT INTO `referral` (referral,referred,accepted) VALUES ('"+getId(r)+"','"+getId(d)+"', '0')");
+				
+			}catch (SQLException e) {
+				e.printStackTrace();
+			}
+		});
+	}
+	public void delRef(String d, String r) {
+		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+			try(Statement statement = getConnection().createStatement()){
+				statement.executeUpdate("DELETE FROM `referral` WHERE `referral`='"+getId(r)+"' AND `referred`='"+getId(d)+"' AND `accepted`=FALSE");
+			}catch (SQLException e) {
+				e.printStackTrace();
+			}
+		});
+	}
+	public void accRef(String d, String r) {
+		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+			try(Statement statement = getConnection().createStatement()){
+				statement.executeUpdate("UPDATE `referral` SET `accepted`=TRUE WHERE `referral`='"+getId(r)+"' AND `referred`='"+getId(d)+"' AND `accepted`=FALSE");
+				statement.executeUpdate("INSERT INTO `rewards` (referral,referred) VALUES ('"+getId(r)+"','"+getId(d)+"')");
+				statement.executeUpdate("INSERT INTO `achievements` (id) VALUES ('"+getId(d)+"')");
+			}catch (SQLException e) {
+				e.printStackTrace();
+			}
+			updateCol(Bukkit.getOfflinePlayer(UUID.fromString(d)).getUniqueId().toString());
+		});
+	}
+
+	public boolean haveChild(String uuid) {
+
+		try {
+			PreparedStatement statement = getConnection()
+					.prepareStatement("SELECT * FROM `referral` WHERE `referral`='"+getId(uuid)+"' AND `accepted`='1'");
+			
+			ResultSet results = statement.executeQuery();
+			
+			if(results.next()) {
+				getServer().getConsoleSender().sendMessage(ChatColor.RED +"Player have child");
+				return true;
+			}
+			getServer().getConsoleSender().sendMessage(ChatColor.GREEN +"Player don't have child");
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+		
+	}
+
 }

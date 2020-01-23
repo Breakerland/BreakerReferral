@@ -24,8 +24,10 @@ public class OnAdv implements Listener {
 		String advdone = e.getAdvancement().getKey().toString();
 		if(main.advlist.contains(advdone)) {
 			main.updateCol(p.getUniqueId().toString());
+			return;
 		}
 		else {
+			p.sendMessage("nope");
 			return;
 		}
 	}

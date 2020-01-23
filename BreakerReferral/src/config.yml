@@ -9,6 +9,7 @@ data:
   accf: est devenu votre filleul !
   refp: a refuse de devenir votre parrain !
   reff: Vous avez refuse la demande de
+  nof: Vous n'avez pas de filleul !
 db:
   host: localhost
   port: 3306
@@ -19,3 +20,8 @@ db:
 advancement:
   - minecraft:adventure/adventuring_time
   - minecraft:adventure/arbalistic
+  - minecraft:adventure/hero_of_the_village
+rewards:
+  minecraft:adventure/adventuring_time: 10
+  minecraft:adventure/arbalistic: 20
+  minecraft:adventure/hero_of_the_village: 30

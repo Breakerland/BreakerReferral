@@ -25,17 +25,23 @@ public class OnJoin implements Listener {
 	
 	@EventHandler (priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onPlayerJoin(PlayerJoinEvent e) {
-		if(!haveDemande(e.getPlayer().getUniqueId().toString())) {
-			return;
+		String s = e.getPlayer().getUniqueId().toString();
+		if(plugin.DataExist(s)) {
+			if(haveDemande(s)) {
+				AllDmd(s, e.getPlayer());
+			}
 		}
-		AllDmd(e.getPlayer().getUniqueId().toString(), e.getPlayer());
+		if(plugin.isRef(s)) {
+			plugin.updateCol(s);
+		}
+		return;
+		
 	}
 	
 	public boolean haveDemande(String uuid) {
 		try {
 			PreparedStatement statement = plugin.getConnection()
-					.prepareStatement("SELECT * FROM `referral` WHERE `referral`=? AND `accepted`=FALSE");
-			statement.setInt(1, plugin.getId(uuid));			
+					.prepareStatement("SELECT * FROM `referral` WHERE `referral`='"+plugin.getId(uuid)+"' AND `accepted`=FALSE");		
 			ResultSet results = statement.executeQuery();
 			if(results.next()) {
 				plugin.getServer().getConsoleSender().sendMessage(ChatColor.GOLD + Bukkit.getPlayer(UUID.fromString(uuid)).getName() + " have "+results.getRow()+" request(s)");
@@ -79,4 +85,5 @@ public class OnJoin implements Listener {
 		}
 		return;
 	}
+	
 }
