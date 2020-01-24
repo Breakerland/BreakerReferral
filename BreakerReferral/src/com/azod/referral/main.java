@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -22,12 +23,15 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.azod.referral.cmd.CommandParrain;
 import com.azod.referral.listener.OnAdv;
 import com.azod.referral.listener.OnInte;
 import com.azod.referral.listener.OnJoin;
+
+import net.milkbowl.vault.economy.Economy;
 
 
 public class main extends JavaPlugin {
@@ -38,18 +42,25 @@ public class main extends JavaPlugin {
     public List<String> uuidlist = new ArrayList<String>();
     public HashMap<String, Integer> listrew = new HashMap<>();
     public final Set<UUID> players = new HashSet<>();
+    public final Set<UUID> rewplayer = new HashSet<>();
+    public static Economy economy = null;
 	public void onEnable() {
 		saveDefaultConfig();
 		mysqlSetup();
 		initTable();
 		adduuid();
 		initAdv();
+		setupEconomy();
 		CommandParrain instance = new CommandParrain(this);
 		getServer().getPluginManager().registerEvents(instance, this);
 		this.getCommand("parrain").setExecutor(instance);	
 		getServer().getPluginManager().registerEvents(new OnJoin(), this);
 	    getServer().getPluginManager().registerEvents(new OnAdv(this), this);
 	    getServer().getPluginManager().registerEvents(new OnInte(this), this);
+	    if(getServer().getPluginManager().getPlugin("Vault").equals(null)){
+	    	Logger.getLogger("[PluginName] Vault required!");
+	    	getServer().getPluginManager().disablePlugin(this);
+	    	}
 	}
 	
 	public void mysqlSetup() {
@@ -346,5 +357,13 @@ public class main extends JavaPlugin {
 		return false;
 		
 	}
+	public boolean setupEconomy(){
+        RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+        if (economyProvider != null) {
+            economy = economyProvider.getProvider();
+        }
+        return (economy != null);
+    }
+
 
 }

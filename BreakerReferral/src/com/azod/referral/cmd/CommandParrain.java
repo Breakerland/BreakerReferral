@@ -58,7 +58,7 @@ public class CommandParrain implements CommandExecutor, Listener {
 			}
 			child.clear();
 			getChild(p.getUniqueId().toString());
-			Inventory inventory = Bukkit.createInventory(p, Math.min(6, (int) Math.ceil(child.size() / 9D)) * 9, "Vos filleuls");
+			Inventory inventory = Bukkit.createInventory(p, Math.min(6, (int) Math.ceil(child.size() / 9D)) * 9, "§9Vos filleuls");
 			for(UUID owner : child) {
 				ItemStack skull = new ItemStack(Material.PLAYER_HEAD,1);
 				SkullMeta meta = (SkullMeta) skull.getItemMeta();
