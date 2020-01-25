@@ -28,7 +28,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 
 import com.azod.referral.cmd.CommandParrain;
-import com.azod.referral.cmd.padv;
+import com.azod.referral.cmd.Padv;
 import com.azod.referral.listener.OnAdv;
 import com.azod.referral.listener.OnInte;
 import com.azod.referral.listener.OnJoin;
@@ -61,7 +61,7 @@ public class main extends JavaPlugin {
 		CommandParrain instance = new CommandParrain(this);
 		getServer().getPluginManager().registerEvents(instance, this);
 		this.getCommand("parrain").setExecutor(instance);	
-		getCommand("padv").setExecutor(new padv(this));
+		getCommand("padv").setExecutor(new Padv());
 		getServer().getPluginManager().registerEvents(new OnJoin(), this);
 	    getServer().getPluginManager().registerEvents(new OnAdv(this), this);
 	    getServer().getPluginManager().registerEvents(new OnInte(this), this);

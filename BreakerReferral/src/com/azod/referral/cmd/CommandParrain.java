@@ -29,7 +29,7 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
 public class CommandParrain implements CommandExecutor, Listener {
-	main plugin = main.getPlugin(main.class);
+	main plugin;
 	public CommandParrain(main main) {
 		this.plugin = main;
 	}
@@ -232,7 +232,7 @@ public class CommandParrain implements CommandExecutor, Listener {
 					p.spigot().sendMessage(broadText);
 				}
 				player.sendMessage(ChatColor.GREEN+plugin.getConfig().getString("data.demande_sended"));
-				Bukkit.getScheduler ().runTaskLater(plugin, () -> plugin.addRef(player.getUniqueId().toString(),receiver.getUniqueId().toString()), 20);
+				Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> plugin.addRef(player.getUniqueId().toString(),receiver.getUniqueId().toString()), 20);
 				
 			}
 		
