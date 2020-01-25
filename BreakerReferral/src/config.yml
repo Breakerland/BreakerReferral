@@ -1,7 +1,7 @@
 firstlaunch: true
 data:
   maxref: 9
-  moneyb: b
+  moneyb: β
   msgmax: ne peux pas avoir de filleuls supplementaires !
   isref: Vous avez atteint le nombre maximal de parrains !
   hasask: a deja recu votre demande !
@@ -9,9 +9,24 @@ data:
   noask: ne vous a pas envoyer de demande !
   accp: est devenu votre parrain !
   accf: est devenu votre filleul !
-  refp: a refuse de devenir votre parrain !
-  reff: Vous avez refuse la demande de
+  refp: a refusé de devenir votre parrain !
+  reff: Vous avez refusé la demande de
   nof: Vous n'avez pas de filleul !
+  advsucc_par: a réussi un défis ! Venez récupérer votre récompense (/padv)
+  advsucc_fil: Vous avez réussi un défis pour votre parrain !
+  GUI_title2: Récompenses
+  GUI_title1: Vos filleuls
+  red_glass: Rien à voir ici !
+  HOVER_decline: Refuser la demande !
+  HOVER_accept: Accepter la demande !
+  demande: souhaite devenir votre filleul(e) !
+  bouton_refuser: REFUSER
+  bouton_accepter: ACCEPTER
+  joueur_innexistant: Le joueur $PLAYER n'existe pas !
+  demande_sended: Votre demande a bien été envoyé!
+  clickable_recup: À récupérer !
+  clickable_nop: Déjà récupérer !
+  clickable_recomp: "Récompense:"
 db:
   host: localhost
   port: 3306
@@ -31,13 +46,33 @@ advancement:
   - minecraft:adventure/shoot_arrow
   - minecraft:adventure/summon_iron_golem
 rewards:
-  minecraft:adventure/adventuring_time: 10
-  minecraft:adventure/arbalistic: 20
-  minecraft:adventure/hero_of_the_village: 30
-  minecraft:adventure/honey_block_slide: 40
-  minecraft:adventure/kill_a_mob: 50
-  minecraft:adventure/shoot_arrow: 60
-  minecraft:adventure/ol_betsy: 70
-  minecraft:adventure/root: 80
-  minecraft:adventure/shoot_arrow: 90
-  minecraft:adventure/summon_iron_golem: 100
+  minecraft:adventure/adventuring_time:
+    coins: 10
+    title: Adventuing Time !
+  minecraft:adventure/arbalistic:
+    coins: 20
+    title: Arbalistic
+  minecraft:adventure/hero_of_the_village:
+    coins: 30
+    title: Hero of the Village
+  minecraft:adventure/honey_block_slide:
+    coins: 40
+    title: Honey Block Slide
+  minecraft:adventure/kill_a_mob:
+    coins: 50
+    title: Kill A Mob !
+  minecraft:adventure/shoot_arrow:
+    coins: 60
+    title: Shoot Arrow !
+  minecraft:adventure/ol_betsy:
+    coins: 70
+    title: Ol Besty
+  minecraft:adventure/root:
+    coins: 80
+    title: Root
+  minecraft:adventure/shoot_arrow:
+    coins: 90
+    title: Shoot Arrow
+  minecraft:adventure/summon_iron_golem:
+    coins: 100
+    title: Summon Iron Golem

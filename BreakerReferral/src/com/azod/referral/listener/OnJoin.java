@@ -61,19 +61,19 @@ public class OnJoin implements Listener {
 			ResultSet results = statement.executeQuery();
 			while(results.next()) {
 				TextComponent acceptText = new TextComponent();
-				acceptText.setText("§4[REFUSER]");
+				acceptText.setText(ChatColor.RED+"["+plugin.getConfig().getString("data.bouton_refuser")+"]");
 				acceptText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/parrain decline " + plugin.getUnique(results.getInt("referred"))));
-				acceptText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.RED + "Refuser la demander").create()));
+				acceptText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.RED + plugin.getConfig().getString("data.HOVER_decline")).create()));
 				
 				///creation du bouton accepté
 				TextComponent declineText = new TextComponent();
-				declineText.setText("§a [ACCEPTER] ");
+				declineText.setText(ChatColor.GREEN+"["+plugin.getConfig().getString("data.bouton_accepter")+"] ");
 				declineText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/parrain accept " + plugin.getUnique(results.getInt("referred"))));
-				declineText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GREEN + "Accepter la demande").create()));
+				declineText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GREEN + plugin.getConfig().getString("data.HOVER_accept")).create()));
 				
 				///creation text quand demande
 				TextComponent broadText = new TextComponent();
-				broadText.setText(ChatColor.GOLD + Bukkit.getPlayer(UUID.fromString(plugin.getUnique(results.getInt("referred")))).getName() + " souhaite devenir votre filleul(e)");
+				broadText.setText(ChatColor.GOLD + Bukkit.getPlayer(UUID.fromString(plugin.getUnique(results.getInt("referred")))).getName() + " "+plugin.getConfig().getString("data.demande"));
 				///ajout du choice text au broad
 				broadText.addExtra(declineText);
 				broadText.addExtra(acceptText);

@@ -44,13 +44,13 @@ public class CommandParrain implements CommandExecutor, Listener {
 			return false;
 			
 		}
-		else if (args[0].equalsIgnoreCase("reload") && sender.hasPermission("sponsor.admin")) {
+		else if (args[0].equalsIgnoreCase("reload") && sender.hasPermission("parrain.admin")) {
 			plugin.reloadConfig();
 			Player p = (Player) sender;
 			p.sendMessage(ChatColor.GREEN+"[BreakerReferral] >>> Config Reloaded !");
 			return false;
 		}
-		else if(args[0].equalsIgnoreCase("advancement") || cmd.getName().equalsIgnoreCase("padv")) {
+		else if(args[0].equalsIgnoreCase("advancement")) {
 			Player p = (Player) sender;
 			if(!plugin.haveChild(p.getUniqueId().toString())) {
 				p.sendMessage(ChatColor.RED+plugin.getConfig().getString("data.nof"));
@@ -58,7 +58,7 @@ public class CommandParrain implements CommandExecutor, Listener {
 			}
 			child.clear();
 			getChild(p.getUniqueId().toString());
-			Inventory inventory = Bukkit.createInventory(p, Math.min(6, (int) Math.ceil(child.size() / 9D)) * 9, "§9Vos filleuls");
+			Inventory inventory = Bukkit.createInventory(p, Math.min(6, (int) Math.ceil(child.size() / 9D)) * 9, ChatColor.BLUE+plugin.getConfig().getString("data.GUI_title1"));
 			for(UUID owner : child) {
 				ItemStack skull = new ItemStack(Material.PLAYER_HEAD,1);
 				SkullMeta meta = (SkullMeta) skull.getItemMeta();
@@ -71,7 +71,7 @@ public class CommandParrain implements CommandExecutor, Listener {
 			Integer i = child.size();
 			ItemStack glass = new ItemStack(Material.RED_STAINED_GLASS_PANE,1);
 			ItemMeta gmeta = glass.getItemMeta();
-			gmeta.setDisplayName(ChatColor.RED+"Rien à voir ici !");
+			gmeta.setDisplayName(ChatColor.RED+plugin.getConfig().getString("data.red_glass"));
 			glass.setItemMeta(gmeta);
 			while(i < inventory.getSize()) {
 				inventory.setItem(i, glass);
@@ -185,7 +185,7 @@ public class CommandParrain implements CommandExecutor, Listener {
 		OfflinePlayer receiver = Bukkit.getOfflinePlayer(args[0]);
 		Player player = (Player) sender;
 			if (receiver == null) {
-				player.sendMessage("§cLe joueur §6"+ args[0] + "§c n'existe pas !");
+				player.sendMessage(ChatColor.RED+plugin.getConfig().getString("data.joueur_innexistant").replace("$PLAYER", args[0]));
 				return false;
 			}
 			else {
@@ -212,26 +212,26 @@ public class CommandParrain implements CommandExecutor, Listener {
 					Player p = (Player) receiver;
 					///creation du bouton accepté
 					TextComponent acceptText = new TextComponent();
-					acceptText.setText("§4[REFUSER]");
+					acceptText.setText(ChatColor.RED+"["+plugin.getConfig().getString("data.bouton_refuser")+"]");
 					acceptText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/parrain decline " + player.getUniqueId()));
-					acceptText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.RED + "Refuser la demander").create()));
+					acceptText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.RED + plugin.getConfig().getString("data.HOVER_decline")).create()));
 					
 					///creation du bouton accepté
 					TextComponent declineText = new TextComponent();
-					declineText.setText("§a [ACCEPTER] ");
+					declineText.setText(ChatColor.GREEN+"["+plugin.getConfig().getString("data.bouton_accepter")+"] ");
 					declineText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/parrain accept " + player.getUniqueId()));
-					declineText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GREEN + "Accepter la demande").create()));
+					declineText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GREEN + plugin.getConfig().getString("data.HOVER_accept")).create()));
 					
 					///creation text quand demande
 					TextComponent broadText = new TextComponent();
-					broadText.setText(ChatColor.GOLD + player.getName() + " souhaite devenir votre filleul(e)");
+					broadText.setText(ChatColor.GOLD + player.getName()+ " "+plugin.getConfig().getString("data.demande"));
 					///ajout du choice text au broad
 					broadText.addExtra(declineText);
 					broadText.addExtra(acceptText);
 					
 					p.spigot().sendMessage(broadText);
 				}
-				player.sendMessage(ChatColor.GREEN+"Votre demande à bien été envoyé !");
+				player.sendMessage(ChatColor.GREEN+plugin.getConfig().getString("data.demande_sended"));
 				Bukkit.getScheduler ().runTaskLater(plugin, () -> plugin.addRef(player.getUniqueId().toString(),receiver.getUniqueId().toString()), 20);
 				
 			}

@@ -26,7 +26,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+
 import com.azod.referral.cmd.CommandParrain;
+import com.azod.referral.cmd.padv;
 import com.azod.referral.listener.OnAdv;
 import com.azod.referral.listener.OnInte;
 import com.azod.referral.listener.OnJoin;
@@ -47,6 +49,7 @@ public class main extends JavaPlugin {
 	public void onEnable() {
 		saveDefaultConfig();
 		if(!getConfig().getString("firstlaunch").equalsIgnoreCase("false")) {
+			Logger.getLogger("[BreakerReferral] Edit the config.yml and reload/restart (don't forget to set firstlaunch: false)");
 			Bukkit.getPluginManager().disablePlugin(this);
 			return;
 		}
@@ -58,6 +61,7 @@ public class main extends JavaPlugin {
 		CommandParrain instance = new CommandParrain(this);
 		getServer().getPluginManager().registerEvents(instance, this);
 		this.getCommand("parrain").setExecutor(instance);	
+		getCommand("padv").setExecutor(new padv(this));
 		getServer().getPluginManager().registerEvents(new OnJoin(), this);
 	    getServer().getPluginManager().registerEvents(new OnAdv(this), this);
 	    getServer().getPluginManager().registerEvents(new OnInte(this), this);
@@ -361,6 +365,25 @@ public class main extends JavaPlugin {
         }
         return (economy != null);
     }
+	public UUID getPar(String d) {
+	try {
+			PreparedStatement statement = getConnection()
+					.prepareStatement("SELECT * FROM `referral` WHERE `referred`='"+getId(d)+"' AND `accepted`='1'");
+			
+			
+			ResultSet results = statement.executeQuery();
+			if(results.next()) {
+				UUID player = UUID.fromString(getUnique(results.getInt("referral")));
+				return player;
+			}
+			
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	
+	}
 
 
 }

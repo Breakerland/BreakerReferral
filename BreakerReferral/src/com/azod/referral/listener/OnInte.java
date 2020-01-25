@@ -62,7 +62,7 @@ public class OnInte implements Listener {
 			String pname = two[0];
 			e.setCancelled(true);
 			plcl.put(p.getUniqueId().toString(), Bukkit.getOfflinePlayer(pname).getUniqueId().toString());
-			Inventory rew = Bukkit.createInventory(p, Math.min(6, (int) Math.ceil(plugin.advlist.size() / 9D)) * 9, "§9Récompenses");
+			Inventory rew = Bukkit.createInventory(p, Math.min(6, (int) Math.ceil(plugin.advlist.size() / 9D)) * 9, ChatColor.BLUE+plugin.getConfig().getString("data.GUI_title2"));
 			Integer it = 0;
 			for(String s : plugin.advlist) {
 				Advancement a = plugin.getAdvancement(s);				
@@ -82,7 +82,7 @@ public class OnInte implements Listener {
 			Integer iter = plugin.advlist.size();
 			ItemStack glass = new ItemStack(Material.RED_STAINED_GLASS_PANE,1);
 			ItemMeta gmeta = glass.getItemMeta();
-			gmeta.setDisplayName(ChatColor.RED+"Rien à voir ici !");
+			gmeta.setDisplayName(ChatColor.RED+plugin.getConfig().getString("data.red_glass"));
 			glass.setItemMeta(gmeta);
 			while(iter < rew.getSize()) {
 				rew.setItem(iter, glass);
@@ -106,7 +106,7 @@ public class OnInte implements Listener {
 				//Peut etre récupérer
 				e.setCancelled(true);
 				String f = plcl.get(p.getUniqueId().toString());
-				Double d = new Double(plugin.getConfig().getInt("rewards."+madv.get(e.getSlot())));
+				Double d = new Double(plugin.getConfig().getInt("rewards."+madv.get(e.getSlot())+".coins"));
 				int di = (int) Math.round(d);
 				plugin.economy.depositPlayer(Bukkit.getOfflinePlayer(p.getUniqueId()),d);
 				updateRew(f,p.getUniqueId().toString(), madv.get(e.getSlot()).replace("minecraft:", ""));
@@ -164,12 +164,11 @@ public class OnInte implements Listener {
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e1) {
             e1.printStackTrace();
         }
-        String[] name = s.split("/");
-        String nem = name[1].replace("_", " ");
-        headMeta.setDisplayName(nem);
+
+        headMeta.setDisplayName(plugin.getConfig().getString("rewards."+s+".title"));
         List<String> lore = new ArrayList<String>();
-        Integer r = plugin.getConfig().getInt("rewards."+s);
-        lore.add("§6Récompense: "+r.toString()+plugin.getConfig().getString("data.moneyb"));
+        Integer r = plugin.getConfig().getInt("rewards."+s+".coins");
+        lore.add(ChatColor.GOLD+plugin.getConfig().getString("data.clickable_recomp")+" "+r.toString()+plugin.getConfig().getString("data.moneyb"));
         headMeta.setLore(lore);
         headMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         head.setItemMeta(headMeta);
@@ -194,14 +193,12 @@ public class OnInte implements Listener {
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e1) {
             e1.printStackTrace();
         }
-        String[] name = s.split("/");
-        String nem = name[1].replace("_", " ");
-        headMeta.setDisplayName(nem);
+        headMeta.setDisplayName(plugin.getConfig().getString("rewards."+s+".title"));
         headMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         List<String> lore = new ArrayList<String>();
-        Integer r = plugin.getConfig().getInt("rewards."+s);
-        lore.add("§6Récompense: "+r.toString()+plugin.getConfig().getString("data.moneyb"));
-        lore.add("§bA récupérer !");
+        Integer r = plugin.getConfig().getInt("rewards."+s+".coins");
+        lore.add(ChatColor.GOLD+plugin.getConfig().getString("data.clickable_recomp")+" "+r.toString()+plugin.getConfig().getString("data.moneyb"));
+        lore.add(ChatColor.AQUA+plugin.getConfig().getString("data.clickable_recup"));
         headMeta.setLore(lore);
         head.setItemMeta(headMeta);
         head.addUnsafeEnchantment(Enchantment.MENDING, 1);
@@ -226,12 +223,10 @@ public class OnInte implements Listener {
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e1) {
             e1.printStackTrace();
         }
-        String[] name = s.split("/");
-        String nem = name[1].replace("_", " ");
-        headMeta.setDisplayName(nem);
+        headMeta.setDisplayName(plugin.getConfig().getString("rewards."+s+".title"));
         headMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         List<String> lore = new ArrayList<String>();
-        lore.add("§4Déjà récupérer !");
+        lore.add(ChatColor.RED+plugin.getConfig().getString("data.clickable_nop"));
         headMeta.setLore(lore);        
         head.setItemMeta(headMeta);
         ItemMeta sim = head.getItemMeta();
