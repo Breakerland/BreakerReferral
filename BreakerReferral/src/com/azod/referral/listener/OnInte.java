@@ -13,6 +13,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.craftbukkit.libs.org.apache.commons.codec.binary.Base64;
 import org.bukkit.enchantments.Enchantment;
@@ -68,7 +69,7 @@ public class OnInte implements Listener {
 				if(CheckRec(Bukkit.getOfflinePlayer(pname).getUniqueId().toString(), p.getUniqueId().toString(), s)) {
 					rew.setItem(it, getGSkull("http://textures.minecraft.net/texture/cb3c17b2ddec2b726d717a8b5a7d68b7772fbd9c09a3ff4bd2a412d24ccd491c", a,s));
 				}
-				else if(CheckAdv(p.getUniqueId().toString(), s)) {
+				else if(CheckAdv(p.getUniqueId().toString(), s) && !CheckRec(Bukkit.getOfflinePlayer(pname).getUniqueId().toString(), p.getUniqueId().toString(), s)) {
 					rew.setItem(it, getESkull("http://textures.minecraft.net/texture/c0e9e66de3631f412b0298c4f0b6ed5c41468c158641210f5c850fa4ed02b2c4", a,s));
 				}
 				
@@ -87,6 +88,7 @@ public class OnInte implements Listener {
 				rew.setItem(iter, glass);
 				iter++;
 			}
+			p.playSound(p.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1f, 1f);
 			p.openInventory(rew);
 			plugin.rewplayer.add(p.getUniqueId());
 		}
@@ -105,31 +107,32 @@ public class OnInte implements Listener {
 				e.setCancelled(true);
 				String f = plcl.get(p.getUniqueId().toString());
 				Double d = new Double(plugin.getConfig().getInt("rewards."+madv.get(e.getSlot())));
+				int di = (int) Math.round(d);
 				plugin.economy.depositPlayer(Bukkit.getOfflinePlayer(p.getUniqueId()),d);
-				updateRew(p.getUniqueId().toString(), f, madv.get(e.getSlot()).replace("minecraft:", ""));
-				p.sendMessage("Félicitation tu as reçu "+d+plugin.getConfig().getString("data.moneyb"));
-				e.setCancelled(true);
-				plcl.remove(p.getUniqueId().toString(), Bukkit.getOfflinePlayer(f).getUniqueId().toString());
-				p.closeInventory();
-				p.performCommand("parrain advancement");
+				updateRew(f,p.getUniqueId().toString(), madv.get(e.getSlot()).replace("minecraft:", ""));
+				p.sendMessage(ChatColor.GREEN+"Félicitation tu as reçu "+di+plugin.getConfig().getString("data.moneyb"));
+				p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+				e.getInventory().setItem(e.getSlot(), getGSkull("http://textures.minecraft.net/texture/cb3c17b2ddec2b726d717a8b5a7d68b7772fbd9c09a3ff4bd2a412d24ccd491c", plugin.getAdvancement(madv.get(e.getSlot())),madv.get(e.getSlot())));
+				//p.performCommand("parrain advancement");
 				return;
 			}
 			else if(i.containsEnchantment(Enchantment.DURABILITY)){
 				//Déjà récupéré
 				e.setCancelled(true);
-				p.sendMessage("deja recup");
+				p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
 				return;
 			}
 			else if(i.containsEnchantment(Enchantment.FIRE_ASPECT)) {
 				//Pas finis
 				e.setCancelled(true);
-				p.sendMessage("peut pas recup");
+				p.playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 1f);
 				return;
 			}
 		}
 		else return;
 	
 	}
+	@SuppressWarnings("deprecation")
 	@EventHandler (priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onClose(InventoryCloseEvent e) {
 		if(plugin.players.contains(e.getPlayer().getUniqueId())) {
@@ -138,9 +141,11 @@ public class OnInte implements Listener {
 		}
 		else if(plugin.rewplayer.contains(e.getPlayer().getUniqueId())) {
 			plugin.rewplayer.remove(e.getPlayer().getUniqueId());
+			plcl.remove(e.getPlayer().getUniqueId().toString(), Bukkit.getOfflinePlayer(plcl.get(e.getPlayer().getUniqueId().toString())).getUniqueId().toString());
 			return;
 		}
 	}
+
     public ItemStack getSkull(String url, Advancement a, String s) {
         @SuppressWarnings("deprecation")
 		ItemStack head = new ItemStack(Material.PLAYER_HEAD, 1, (short)3);

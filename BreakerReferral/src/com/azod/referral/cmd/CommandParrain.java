@@ -186,8 +186,10 @@ public class CommandParrain implements CommandExecutor, Listener {
 		Player player = (Player) sender;
 			if (receiver == null) {
 				player.sendMessage("§cLe joueur §6"+ args[0] + "§c n'existe pas !");
+				return false;
 			}
 			else {
+				
 				if(!plugin.DataExist(player.getUniqueId().toString())) {
 					plugin.addData(Bukkit.getOfflinePlayer(player.getUniqueId()));
 				}
@@ -229,6 +231,7 @@ public class CommandParrain implements CommandExecutor, Listener {
 					
 					p.spigot().sendMessage(broadText);
 				}
+				player.sendMessage(ChatColor.GREEN+"Votre demande à bien été envoyé !");
 				Bukkit.getScheduler ().runTaskLater(plugin, () -> plugin.addRef(player.getUniqueId().toString(),receiver.getUniqueId().toString()), 20);
 				
 			}
@@ -246,9 +249,9 @@ public class CommandParrain implements CommandExecutor, Listener {
 			while(results.next()) {
 				UUID player = UUID.fromString(plugin.getUnique(results.getInt("referred")));
 				child.add(player);
-				return;
+				
 			}
-			plugin.getServer().getConsoleSender().sendMessage(ChatColor.GREEN +"Player don't have child");
+			
 		}catch (SQLException e) {
 			e.printStackTrace();
 		}

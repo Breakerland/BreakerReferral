@@ -27,7 +27,6 @@ public class OnAdv implements Listener {
 			return;
 		}
 		else {
-			p.sendMessage("nope");
 			return;
 		}
 	}

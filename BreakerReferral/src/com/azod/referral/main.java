@@ -46,6 +46,10 @@ public class main extends JavaPlugin {
     public static Economy economy = null;
 	public void onEnable() {
 		saveDefaultConfig();
+		if(!getConfig().getString("firstlaunch").equalsIgnoreCase("false")) {
+			Bukkit.getPluginManager().disablePlugin(this);
+			return;
+		}
 		mysqlSetup();
 		initTable();
 		adduuid();
@@ -61,8 +65,7 @@ public class main extends JavaPlugin {
 	    	Logger.getLogger("[PluginName] Vault required!");
 	    	getServer().getPluginManager().disablePlugin(this);
 	    	}
-	}
-	
+	}	
 	public void mysqlSetup() {
 		host = this.getConfig().getString("db.host");
 		port = this.getConfig().getInt("db.port");
@@ -337,25 +340,19 @@ public class main extends JavaPlugin {
 			updateCol(Bukkit.getOfflinePlayer(UUID.fromString(d)).getUniqueId().toString());
 		});
 	}
-
 	public boolean haveChild(String uuid) {
-
 		try {
 			PreparedStatement statement = getConnection()
 					.prepareStatement("SELECT * FROM `referral` WHERE `referral`='"+getId(uuid)+"' AND `accepted`='1'");
 			
-			ResultSet results = statement.executeQuery();
-			
+			ResultSet results = statement.executeQuery();			
 			if(results.next()) {
-				getServer().getConsoleSender().sendMessage(ChatColor.RED +"Player have child");
 				return true;
 			}
-			getServer().getConsoleSender().sendMessage(ChatColor.GREEN +"Player don't have child");
 		}catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return false;
-		
+		return false;		
 	}
 	public boolean setupEconomy(){
         RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
